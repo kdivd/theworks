@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../routes.dart';
-import '../widgets/app_button.dart';
 
 class TagsScreen extends StatelessWidget {
   const TagsScreen({super.key});

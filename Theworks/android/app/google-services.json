@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408119200979",
+    "project_id": "theworks-35576",
+    "storage_bucket": "theworks-35576.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408119200979:android:b86a17502e9e361a2e9826",
+        "android_client_info": {
+          "package_name": "com.example.theworks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOGvwpLLhP7I2rzxDySqKrNBolqGnkWtw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
