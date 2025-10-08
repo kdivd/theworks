@@ -3,6 +3,19 @@ import 'package:flutter/material.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
+  // één plek voor de knopmaat
+  static const Size _btnSize = Size(280, 48);
+
+  ButtonStyle get _btnStyle => ElevatedButton.styleFrom(
+    fixedSize: _btnSize,                   // 🔒 vaste breedte + hoogte
+    shape: const StadiumBorder(),         // ronde uiteinden zoals je design
+    backgroundColor: const Color(0xFF303A5A),
+    foregroundColor: Colors.white,
+    elevation: 4,
+    padding: EdgeInsets.zero,             // geen extra binnen-padding (maat blijft exact)
+    textStyle: const TextStyle(fontWeight: FontWeight.w600),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,7 +24,6 @@ class WelcomeScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // voorkom crash als asset mist
             Image.asset(
               'assets/images/TESTLOGO.png',
               height: 100,
@@ -27,25 +39,19 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+
+            // 🔹 Log in (vast formaat)
             ElevatedButton(
               onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF303A5A),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-              ),
+              style: _btnStyle,
               child: const Text('Log in'),
             ),
             const SizedBox(height: 12),
+
+            // 🔹 Create account (vast formaat)
             ElevatedButton(
               onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF303A5A),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-              ),
+              style: _btnStyle,
               child: const Text('Create account'),
             ),
           ],
