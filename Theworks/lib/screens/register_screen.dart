@@ -2,7 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import '../services/auth_service.dart';
+import 'package:theworks/auth_service.dart';
 import '../routes.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -186,10 +186,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-      await AuthService.signUpWithEmail(_email.text.trim(), _pw1.text);
+   //   await AuthService.signUpWithEmail(_email.text.trim(), _pw1.text);
       // (optioneel) e-mail verificatie versturen:
       // await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-
+      authService.signIn(_email.text,_pw1.text);
+      authService.createAccount(_email.text, _pw1.text);
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.tags);
     } on FirebaseAuthException catch (e) {
@@ -204,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _googleSignIn() async {
     setState(() => _busy = true);
     try {
-      await AuthService.signInWithGoogle();
+      //await AuthService.signInWithGoogle();
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.tags);
     } on UnimplementedError {
