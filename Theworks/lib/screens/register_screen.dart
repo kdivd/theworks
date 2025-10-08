@@ -1,8 +1,9 @@
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:theworks/auth_service.dart';
+import 'package:theworks/classes/auth_service.dart';
 import '../routes.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -57,7 +58,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final supportsGoogle = kIsWeb ||
+    final supportsGoogle =
+        kIsWeb ||
         defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
 
@@ -70,7 +72,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           backgroundColor: const Color(0xFFCCBE96),
           elevation: 0,
           centerTitle: true,
-          title: const Text('Create account', style: TextStyle(color: Color(0xFF303A5A))),
+          title: const Text(
+            'Create account',
+            style: TextStyle(color: Color(0xFF303A5A)),
+          ),
         ),
         body: Center(
           child: SingleChildScrollView(
@@ -97,7 +102,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       validator: (v) {
                         final text = v?.trim() ?? '';
                         if (text.isEmpty) return 'Enter your email';
-                        if (!text.contains('@') || !text.contains('.')) return 'Invalid email';
+                        if (!text.contains('@') || !text.contains('.'))
+                          return 'Invalid email';
                         return null;
                       },
                     ),
@@ -115,7 +121,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         'Password',
                         suffix: IconButton(
                           onPressed: () => setState(() => _hidePw1 = !_hidePw1),
-                          icon: Icon(_hidePw1 ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                          icon: Icon(
+                            _hidePw1 ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                       validator: (v) {
@@ -138,7 +147,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         'Confirm password',
                         suffix: IconButton(
                           onPressed: () => setState(() => _hidePw2 = !_hidePw2),
-                          icon: Icon(_hidePw2 ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                          icon: Icon(
+                            _hidePw2 ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                       validator: (v) {
@@ -170,7 +182,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
 
                   TextButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
+                    onPressed: () => Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.login,
+                    ),
                     child: const Text('Already have an account? Log in'),
                   ),
                 ],
@@ -186,11 +201,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-   //   await AuthService.signUpWithEmail(_email.text.trim(), _pw1.text);
+      //   await AuthService.signUpWithEmail(_email.text.trim(), _pw1.text);
       // (optioneel) e-mail verificatie versturen:
       // await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      authService.signIn(_email.text,_pw1.text);
-      authService.createAccount(_email.text, _pw1.text);
+      await authService.value.createAccount(
+        email: _email.text,
+        password: _pw1.text,
+      );
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.tags);
     } on FirebaseAuthException catch (e) {
@@ -221,12 +238,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _mapAuthError(FirebaseAuthException e) {
     switch (e.code) {
-      case 'email-already-in-use': return 'This email is already in use.';
-      case 'invalid-email':        return 'Invalid email address.';
-      case 'weak-password':        return 'Password is too weak.';
-      case 'operation-not-allowed':return 'Email/password sign-in is disabled.';
-      case 'network-request-failed': return 'Network error. Check your connection.';
-      default: return e.message ?? 'Authentication failed.';
+      case 'email-already-in-use':
+        return 'This email is already in use.';
+      case 'invalid-email':
+        return 'Invalid email address.';
+      case 'weak-password':
+        return 'Password is too weak.';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is disabled.';
+      case 'network-request-failed':
+        return 'Network error. Check your connection.';
+      default:
+        return e.message ?? 'Authentication failed.';
     }
   }
 
