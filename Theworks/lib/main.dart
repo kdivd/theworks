@@ -1,10 +1,8 @@
+import 'firebase_options.dart';
+import 'package:theworks/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
-import 'firebase_options.dart';
-import 'screens/welcome_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,12 +21,8 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'DIVD Works',
       theme: ThemeData(fontFamily: 'KumbhSans'),
-      initialRoute: '/',
-      routes: {
-        '/':        (_) => const WelcomeScreen(),
-        '/login':   (_) => const LoginScreen(),
-        '/register':(_) => const RegisterScreen(),
-      },
+      initialRoute: AppRoutes.welcome,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

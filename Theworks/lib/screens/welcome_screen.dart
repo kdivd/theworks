@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:theworks/routes.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  // één plek voor de knopmaat
   static const Size _btnSize = Size(280, 48);
 
   ButtonStyle get _btnStyle => ElevatedButton.styleFrom(
-    fixedSize: _btnSize,                   // 🔒 vaste breedte + hoogte
-    shape: const StadiumBorder(),         // ronde uiteinden zoals je design
+    fixedSize: _btnSize,
+    shape: const StadiumBorder(),
     backgroundColor: const Color(0xFF303A5A),
     foregroundColor: Colors.white,
     elevation: 4,
-    padding: EdgeInsets.zero,             // geen extra binnen-padding (maat blijft exact)
+    padding: EdgeInsets.zero,
     textStyle: const TextStyle(fontWeight: FontWeight.w600),
   );
 
@@ -42,7 +42,7 @@ class WelcomeScreen extends StatelessWidget {
 
             // 🔹 Log in (vast formaat)
             ElevatedButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+              onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
               style: _btnStyle,
               child: const Text('Log in'),
             ),
@@ -50,9 +50,16 @@ class WelcomeScreen extends StatelessWidget {
 
             // 🔹 Create account (vast formaat)
             ElevatedButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
+              onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.register),
               style: _btnStyle,
               child: const Text('Create account'),
+            ),
+            const SizedBox(height: 12),
+            // 🔹 Tags screen button
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.tags),
+              style: _btnStyle,
+              child: const Text('Go to Tags'),
             ),
           ],
         ),

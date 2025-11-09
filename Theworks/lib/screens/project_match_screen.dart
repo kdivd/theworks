@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 
-class HomeTab extends StatefulWidget {
-  final List<String>? selectedTags;
+class ProjectMatchScreen extends StatefulWidget {
+  final List<String> selectedTags;
 
-  const HomeTab({super.key, this.selectedTags});
+  const ProjectMatchScreen({super.key, required this.selectedTags});
 
   @override
-  State<HomeTab> createState() => _HomeTabState();
+  State<ProjectMatchScreen> createState() => _ProjectMatchScreenState();
 }
 
-class _HomeTabState extends State<HomeTab> {
-  late Future<List<Project>> _projects;
+class _ProjectMatchScreenState extends State<ProjectMatchScreen> {
+  late Future<List<Project>> _matchedProjects;
   final ProjectService _projectService = ProjectService();
 
   @override
   void initState() {
     super.initState();
-    _projects = _projectService.getProjectsByTags(widget.selectedTags ?? []);
+    _matchedProjects = _projectService.getProjectsByTags(widget.selectedTags);
   }
 
   @override
@@ -28,7 +28,7 @@ class _HomeTabState extends State<HomeTab> {
         title: const Text('Matched Projects'),
       ),
       body: FutureBuilder<List<Project>>(
-        future: _projects,
+        future: _matchedProjects,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
