@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:theworks/classes/auth_service.dart';
+import 'package:theworks/theme/app_colors.dart';
+import 'package:theworks/theme/app_assets.dart';
 import '../routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _pw = TextEditingController();
 
-  String _NoEmail = "Don't have an account? Create account";
+  final String _noEmail = "Don't have an account? Create account";
   bool _hidePw = true;
   bool _busy = false;
 
@@ -31,39 +33,39 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   InputDecoration _filled(String hint, {Widget? suffix}) => InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: Colors.white70),
-    filled: true,
-    fillColor: const Color(0xFF303A5A),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(30),
-      borderSide: BorderSide.none,
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-    suffixIcon: suffix,
-  );
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: AppColors.darkBlue,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        suffixIcon: suffix,
+      );
 
   ButtonStyle get _btnStyle => ElevatedButton.styleFrom(
-    fixedSize: _btnSize,
-    shape: const StadiumBorder(),
-    backgroundColor: const Color(0xFF303A5A),
-    foregroundColor: Colors.white,
-    elevation: 4,
-    padding: EdgeInsets.zero,
-    textStyle: const TextStyle(fontWeight: FontWeight.w600),
-  );
+        fixedSize: _btnSize,
+        shape: const StadiumBorder(),
+        backgroundColor: AppColors.darkBlue,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        padding: EdgeInsets.zero,
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      );
 
   @override
   Widget build(BuildContext context) {
-    final supportsGoogle =
-        kIsWeb ||
+    final supportsGoogle = kIsWeb ||
         defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
 
     return PopScope(
       canPop: false, // blokkeer terug naar welcome
       child: Scaffold(
-        backgroundColor: const Color(0xFFCCBE96),
+        backgroundColor: AppColors.accentGold,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -77,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 20),
                       child: Image.asset(
-                        'assets/images/TESTLOGO.png',
+                        AppAssets.logo,
                         height: 72,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) =>
@@ -89,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Log into your account',
                       style: TextStyle(
-                        color: Color(0xFF303A5A),
+                        color: AppColors.darkBlue,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -140,7 +142,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               validator: (v) {
                                 final text = v ?? '';
-                                if (text.length < 8) return 'Min. 8 characters';
+                                if (text.length < 8) {
+                                  return 'Min. 8 characters';
+                                }
                                 return null;
                               },
                             ),
@@ -169,11 +173,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: () =>
-                          Navigator.pushReplacementNamed(context, '/register'),
+                      onPressed: () => Navigator.pushReplacementNamed(
+                          context, AppRoutes.register),
                       style: _btnStyle,
-                      child: const Text(
-                        "Don't have an account? Create account",
+                      child: Text(
+                        _noEmail,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -195,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _email.text.trim(),
         password: _pw.text,
       );
-      _showError('Logged in successfully');
+
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.home);
     } on FirebaseAuthException catch (e) {

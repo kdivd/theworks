@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:theworks/classes/project.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tags_screen.dart';
 import 'home/home_shell.dart';
+import 'screens/project_detail_screen.dart';
+import 'screens/create_project_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/additional_info_screen.dart';
 
 class AppRoutes {
   static const welcome = '/';
@@ -11,6 +16,10 @@ class AppRoutes {
   static const register = '/register';
   static const tags = '/tags';
   static const home = '/home';
+  static const projectDetail = '/project-detail_screen';
+  static const createProject = '/create_project';
+  static const additionalInfo = '/additional_info';
+  static const settings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings s) {
     switch (s.name) {
@@ -22,10 +31,20 @@ class AppRoutes {
         return _page(const RegisterScreen());
       case tags:
         return _page(const TagsScreen());
+      case additionalInfo:
+        final args = s.arguments as List<String>?;
+        return _page(AdditionalInfoScreen(selectedTags: args));
       case home:
         final args = s.arguments as Map<String, dynamic>?;
         final selectedTags = args?['selectedTags'] as List<String>?;
         return _page(HomeShell(selectedTags: selectedTags), fullscreen: true);
+      case projectDetail:
+        final project = s.arguments as Project;
+        return _page(ProjectDetailScreen(project: project));
+      case createProject:
+        return _page(const CreateProjectScreen());
+      case settings:
+        return _page(const SettingsScreen());
       default:
         return _page(const WelcomeScreen());
     }

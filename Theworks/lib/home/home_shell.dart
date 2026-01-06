@@ -3,6 +3,7 @@ import 'home_page.dart';
 import 'search_page.dart';
 import 'notifications_page.dart';
 import 'profile_page.dart';
+import 'package:theworks/theme/app_colors.dart';
 
 class HomeShell extends StatefulWidget {
   final List<String>? selectedTags;
@@ -16,16 +17,15 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _i = 0;
   late final List<Widget> _pages;
-
-  final Color _selectedItemColor = const Color(0xFF303A5A);
-  final Color _unselectedItemColor = const Color(0xFF2D2C2B);
-  final Color _backGroundColor = const Color(0xFFDEE0E2);
+  static const Color _selectedItemColor = AppColors.darkBlue;
+  static const Color _unselectedItemColor = Color(0xFF2D2C2B);
+  static const Color _backGroundColor = AppColors.offWhite;
 
   @override
   void initState() {
     super.initState();
     _pages = [
-      HomeTab(selectedTags: widget.selectedTags), // Pass tags to HomeTab
+      HomeTab(selectedTags: widget.selectedTags),
       const SearchTab(),
       const NotificationsTab(),
       const ProfileTab(),
@@ -37,7 +37,7 @@ class _HomeShellState extends State<HomeShell> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF303A5A),
+        backgroundColor: AppColors.darkBlue,
         body: _pages[_i],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _i,

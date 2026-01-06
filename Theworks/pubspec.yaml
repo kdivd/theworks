@@ -1,8 +1,8 @@
 name: theworks
-description: "the"
+description: "the platform to help you get a internship!"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.0.3+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -15,9 +15,10 @@ dependencies:
   firebase_core: ^4.1.1
   firebase_auth: ^6.0.2
   firebase_performance: ^0.11.1
-  image_picker: ^1.1.2
-  firebase_storage: ^13.0.3
   choice: ^2.3.2
+  cloud_firestore: ^6.1.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
 
 dev_dependencies:
   flutter_test:
