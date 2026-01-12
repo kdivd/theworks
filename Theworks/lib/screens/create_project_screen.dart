@@ -1,6 +1,6 @@
-import 'dart:convert'; // Needed to decode JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Needed to load assets
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
@@ -19,13 +19,11 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   final _descController = TextEditingController();
   final _cityController = TextEditingController();
 
-  // --- TAG VARIABLES ---
-  List<String> _availableTags = []; // Loaded from JSON
-  final List<String> _selectedTags = []; // Selected by user
+  List<String> _availableTags = [];
+  final List<String> _selectedTags = [];
   bool _isLoadingTags = true;
   bool _isUploading = false;
 
-  // Selection Variables
   String _selectedDuration = '3 Months';
   String _selectedLocationType = 'On-site';
 
@@ -35,7 +33,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTags(); // Load tags when screen starts
+    _loadTags();
   }
 
   @override
@@ -46,7 +44,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     super.dispose();
   }
 
-  // --- NEW: Load tags from assets/tags.json ---
   Future<void> _loadTags() async {
     try {
       final String response = await rootBundle.loadString('assets/tags.json');
@@ -64,7 +61,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     }
   }
 
-  // --- NEW: Toggle tag selection ---
   void _toggleTag(String tag) {
     setState(() {
       if (_selectedTags.contains(tag)) {
@@ -78,7 +74,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   Future<void> _submitProject() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Check if at least one tag is selected
     if (_selectedTags.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select at least one tag")),
@@ -95,7 +90,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         name: _titleController.text.trim(),
         description: _descController.text.trim(),
         tags: _selectedTags,
-        // Use the selected list
         createdBy: user?.uid,
         duration: _selectedDuration,
         locationType: _selectedLocationType,
@@ -134,7 +128,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
@@ -146,8 +139,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 validator: (v) => v!.isEmpty ? 'Title is required' : null,
               ),
               const SizedBox(height: 16),
-
-              // Description
               TextFormField(
                 controller: _descController,
                 maxLines: 3,
@@ -161,8 +152,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 validator: (v) => v!.isEmpty ? 'Description is required' : null,
               ),
               const SizedBox(height: 16),
-
-              // City Input
               TextFormField(
                 controller: _cityController,
                 decoration: const InputDecoration(
@@ -175,8 +164,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 validator: (v) => v!.isEmpty ? 'City is required' : null,
               ),
               const SizedBox(height: 16),
-
-              // Duration Dropdown
               DropdownButtonFormField<String>(
                 initialValue: _selectedDuration,
                 decoration: const InputDecoration(
@@ -196,8 +183,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Location Type Chips
               const Text("Location Type",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -217,12 +202,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 }).toList(),
               ),
               const SizedBox(height: 24),
-
-              // --- UPDATED TAG SELECTION UI ---
               const Text("Required Skills (Tags)",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
-
               if (_isLoadingTags)
                 const Center(child: CircularProgressIndicator())
               else if (_availableTags.isEmpty)
@@ -257,10 +239,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     }).toList(),
                   ),
                 ),
-
               const SizedBox(height: 30),
-
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 height: 50,

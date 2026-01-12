@@ -6,7 +6,7 @@ class Project {
   final String? createdBy;
   final String duration;
   final String locationType;
-  final String city; 
+  final String city;
 
   Project({
     this.id,
@@ -16,7 +16,7 @@ class Project {
     this.createdBy,
     required this.duration,
     required this.locationType,
-    required this.city, // Now required
+    required this.city,
   });
 
   Map<String, dynamic> toMap() {

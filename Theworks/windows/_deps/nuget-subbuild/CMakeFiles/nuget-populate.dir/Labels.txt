@@ -1,0 +1,15 @@
+# Target labels
+ nuget-populate
+# Source files and their labels
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/nuget-populate
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/47ff5a25665c0eaa114145928c4864ce/nuget-populate.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/5b2868e39e90812bda4d6e9591b05a54/nuget-populate-complete.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-build.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-configure.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-copyfile.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-download.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-install.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-mkdir.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-patch.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-test.rule
+C:/Users/kenan/Documents/GitHub/theworks/Theworks/windows/_deps/nuget-subbuild/CMakeFiles/fd34191cf5c17ff8056df6ea7cd7cb85/nuget-populate-update.rule

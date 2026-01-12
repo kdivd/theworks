@@ -35,14 +35,12 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
     'Other'
   ];
 
-  // Work Experience Logic
   bool _hasExperience = false;
   final List<Map<String, dynamic>> _experiences = [];
 
-  // Temporary controllers for the "Add Experience" form
   final TextEditingController _expCompanyController = TextEditingController();
   final TextEditingController _expDescController = TextEditingController();
-  String _expDuration = '6 Months'; // Default duration
+  String _expDuration = '6 Months';
   List<String> _expSelectedTags = [];
 
   final List<String> _durations = [
@@ -55,7 +53,7 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
 
   List<String> _availableTags = [];
   bool _isLoading = false;
-  bool _isAddingExperience = false; // To toggle the "Add Form" visibility
+  bool _isAddingExperience = false;
 
   @override
   void initState() {
@@ -88,7 +86,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
         'tags': List<String>.from(_expSelectedTags),
       });
 
-      // Reset form
       _expCompanyController.clear();
       _expDescController.clear();
       _expDuration = '6 Months';
@@ -117,7 +114,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // If the form is open and filled but not added, add it automatically
       if (_isAddingExperience && _expCompanyController.text.isNotEmpty) {
         _experiences.add({
           'company': _expCompanyController.text.trim(),
@@ -132,14 +128,12 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
         'city': _locationController.text.trim(),
         'portfolioUrl': _portfolioController.text.trim(),
         'bio': _bioController.text.trim(),
-        'experience': _experiences, // Save the list of maps
-        // Legacy fields cleanup
+        'experience': _experiences,
         'hasExperience': _hasExperience,
       }, SetOptions(merge: true));
 
       if (!mounted) return;
 
-      // Navigate to Home
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.home,
@@ -167,7 +161,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
     super.dispose();
   }
 
-  // Helper for gold section titles
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -213,8 +206,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                       style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const SizedBox(height: 30),
-
-                    // --- School ---
                     _buildSectionTitle("School"),
                     const SizedBox(height: 8),
                     Container(
@@ -246,8 +237,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // --- Location ---
                     _buildSectionTitle("Current City"),
                     const SizedBox(height: 8),
                     AppTextField(
@@ -255,8 +244,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                       controller: _locationController,
                     ),
                     const SizedBox(height: 20),
-
-                    // --- Portfolio ---
                     _buildSectionTitle("Portfolio / Website"),
                     const SizedBox(height: 8),
                     AppTextField(
@@ -264,8 +251,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                       controller: _portfolioController,
                     ),
                     const SizedBox(height: 20),
-
-                    // --- Bio ---
                     _buildSectionTitle("About Me"),
                     const SizedBox(height: 8),
                     Container(
@@ -288,8 +273,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                     const SizedBox(height: 30),
                     const Divider(color: Colors.white24),
                     const SizedBox(height: 10),
-
-                    // --- Work Experience ---
                     SwitchListTile(
                       activeTrackColor: AppColors.accentGold,
                       contentPadding: EdgeInsets.zero,
@@ -312,9 +295,7 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                         });
                       },
                     ),
-
                     if (_hasExperience) ...[
-                      // List of added experiences
                       ..._experiences.asMap().entries.map((entry) {
                         final index = entry.key;
                         final exp = entry.value;
@@ -347,7 +328,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                                   ),
                                 ],
                               ),
-                              // Show Duration in list
                               if (exp['duration'] != null)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 4),
@@ -383,10 +363,7 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                           ),
                         );
                       }),
-
                       const SizedBox(height: 16),
-
-                      // Add New Form
                       if (_isAddingExperience)
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -426,7 +403,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                               ),
                               const SizedBox(height: 10),
 
-                              // Duration Dropdown
                               const Text("Duration:",
                                   style: TextStyle(
                                       color: Colors.white70, fontSize: 12)),
@@ -486,8 +462,6 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                                             state.onSelected(_availableTags[i]),
                                         selectedColor: AppColors.offWhite,
                                         backgroundColor: AppColors.accentGold,
-                                        // Keep dark background
-                                        // Change text color: Gold when unselected (so it's visible), Dark Blue when selected
                                         labelStyle: TextStyle(
                                           color:
                                               state.selected(_availableTags[i])
@@ -539,10 +513,7 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                               style: TextStyle(color: AppColors.accentGold)),
                         ),
                     ],
-
                     const SizedBox(height: 40),
-
-                    // Finish Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
         defaultTargetPlatform == TargetPlatform.iOS;
 
     return PopScope(
-      canPop: false, // blokkeer terug naar welcome
+      canPop: false,
       child: Scaffold(
         backgroundColor: AppColors.accentGold,
         body: SafeArea(
@@ -75,7 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 🔹 Logo bovenaan (met vaste hoogte voor consistentie)
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 20),
                       child: Image.asset(
@@ -86,8 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 72),
                       ),
                     ),
-
-                    // 🔹 Titel onder het logo
                     const Text(
                       'Log into your account',
                       style: TextStyle(
@@ -97,8 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // 🔹 E-mail
                     SizedBox(
                       width: 300,
                       child: Form(
@@ -121,8 +116,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                             const SizedBox(height: 12),
-
-                            // 🔹 Wachtwoord
                             TextFormField(
                               controller: _pw,
                               obscureText: _hidePw,
@@ -152,19 +145,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // 🔹 Log in knop
                     ElevatedButton(
                       style: _btnStyle,
                       onPressed: _busy ? null : _login,
                       child: Text(_busy ? 'Please wait…' : 'Log in'),
                     ),
-
                     const SizedBox(height: 12),
-
-                    // 🔹 Google (verberg op desktop)
                     if (supportsGoogle)
                       ElevatedButton(
                         style: _btnStyle,

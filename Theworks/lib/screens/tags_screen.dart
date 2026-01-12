@@ -19,7 +19,6 @@ class _TagsScreenState extends State<TagsScreen> {
   List<String> selectedValues = [];
   bool isLoading = true;
 
-  // Admin Secret Toggle
   bool _isAdmin = false;
   final FocusNode _focusNode = FocusNode();
 
@@ -35,7 +34,6 @@ class _TagsScreenState extends State<TagsScreen> {
     super.dispose();
   }
 
-  // Load both the JSON choices AND the user's existing tags
   Future<void> _initializeData() async {
     await _loadChoices();
     await _loadUserTags();
@@ -58,7 +56,6 @@ class _TagsScreenState extends State<TagsScreen> {
     }
   }
 
-  // --- NEW: Fetch existing tags from Firestore ---
   Future<void> _loadUserTags() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -72,10 +69,8 @@ class _TagsScreenState extends State<TagsScreen> {
           final data = doc.data();
           if (data != null && data.containsKey('tags')) {
             setState(() {
-              // Load the saved tags into the selection list
               selectedValues = List<String>.from(data['tags']);
 
-              // Also check role to set admin toggle state visually
               if (data['role'] == 'recruiter' || data['role'] == 'admin') {
                 _isAdmin = true;
               }
@@ -110,14 +105,9 @@ class _TagsScreenState extends State<TagsScreen> {
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-
-      // --- IMPROVED NAVIGATION ---
-      // If we can pop (e.g. came from Profile), go back.
-      // If not (e.g. came from Register), go to Home.
       if (navigator.canPop()) {
-        navigator.pop(selectedValues); // Pass back tags if needed
+        navigator.pop(selectedValues);
       } else {
-        // Go to Additional Info instead of Home immediately
         navigator.pushReplacementNamed(
           AppRoutes.additionalInfo,
           arguments: selectedValues,

@@ -21,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _pw2 = TextEditingController();
   final _displayName = TextEditingController();
 
-  // --- SECRET ADMIN TOGGLE ---
   bool _isAdmin = false;
   final FocusNode _focusNode = FocusNode();
 
@@ -71,7 +70,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
 
-    // 1. Wrap everything in KeyboardListener
     return KeyboardListener(
       focusNode: _focusNode,
       autofocus: true,
@@ -115,7 +113,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Display Name
                     SizedBox(
                       width: 300,
                       child: TextFormField(
@@ -133,8 +130,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Email
                     SizedBox(
                       width: 300,
                       child: TextFormField(
@@ -155,8 +150,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Password
                     SizedBox(
                       width: 300,
                       child: TextFormField(
@@ -186,8 +179,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Confirm Password
                     SizedBox(
                       width: 300,
                       child: TextFormField(
@@ -215,27 +206,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Create account button
                     ElevatedButton(
                       style: _btnStyle,
                       onPressed: _busy ? null : _createAccount,
                       child: Text(_busy ? 'Please wait…' : 'Create account'),
                     ),
-
                     const SizedBox(height: 12),
-
                     if (supportsGoogle)
                       ElevatedButton(
                         style: _btnStyle,
                         onPressed: _busy ? null : _googleSignIn,
                         child: const Text('Continue with Google'),
                       ),
-
                     const SizedBox(height: 16),
-
                     TextButton(
                       onPressed: () => Navigator.pushReplacementNamed(
                         context,
@@ -257,7 +241,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-      // 1. Create Auth User
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _email.text.trim(),
@@ -272,8 +255,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await user.updateDisplayName(_displayName.text.trim());
       await user.reload();
 
-      // 2. Create Firestore Document Immediately
-      //    We set the role based on the secret toggle
       final String role = _isAdmin ? 'recruiter' : 'student';
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
@@ -291,7 +272,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      // 3. Smart Navigation
       if (!mounted) return;
       if (_isAdmin) {
         // Admins skip tags and go straight to Home
@@ -313,7 +293,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _googleSignIn() async {
-    // Note: You would need to add similar role logic here if you fix Google Sign In
     setState(() => _busy = true);
     try {
       if (!mounted) return;

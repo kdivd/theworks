@@ -21,7 +21,6 @@ class ProjectDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- NEW: Info Row (Location & Duration) ---
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -41,15 +40,11 @@ class ProjectDetailScreen extends StatelessWidget {
                   _buildInfoItem(Icons.location_on, "Location",
                       "${project.city}\n(${project.locationType})"),
                   Container(width: 1, height: 40, color: Colors.grey.shade300),
-                  // Vertical Divider
                   _buildInfoItem(Icons.timer, "Duration", project.duration),
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // --- Description Section ---
             const Text(
               "Project Description",
               style: TextStyle(
@@ -64,12 +59,9 @@ class ProjectDetailScreen extends StatelessWidget {
               style: const TextStyle(
                   fontSize: 16, height: 1.5, color: Colors.black87),
             ),
-
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-
-            // --- Tags/Skills Section ---
             const Text(
               "Required Skills",
               style: TextStyle(
@@ -93,10 +85,7 @@ class ProjectDetailScreen extends StatelessWidget {
                       ))
                   .toList(),
             ),
-
             const SizedBox(height: 40),
-
-            // --- Action Button ---
             SizedBox(
               width: double.infinity,
               height: 50,

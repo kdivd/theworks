@@ -2,7 +2,7 @@ name: theworks
 description: "the platform to help you get a internship!"
 publish_to: 'none'
 
-version: 0.0.3+1
+version: 0.0.5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -24,6 +24,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/TESTLOGO.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true

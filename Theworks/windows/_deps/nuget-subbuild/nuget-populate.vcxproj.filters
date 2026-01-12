@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-copyfile.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\fd34191cf5c17ff8056df6ea7cd7cb85\nuget-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\5b2868e39e90812bda4d6e9591b05a54\nuget-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\47ff5a25665c0eaa114145928c4864ce\nuget-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\nuget-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{223B53F0-F68F-3F42-BE5F-CEA5CA9FE576}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\kenan\Documents\GitHub\theworks\Theworks\windows\_deps\nuget-subbuild\CMakeFiles\47ff5a25665c0eaa114145928c4864ce\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{223B53F0-F68F-3F42-BE5F-CEA5CA9FE576}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
