@@ -24,11 +24,11 @@ class ProjectService {
     }
   }
 
-  Future<List<Project>> getProjectsByTags(List<String> userTags) async {
+  Future<List<(Project, int)>> getProjectsByTags(List<String> userTags) async {
     List<Project> allProjects = await getProjects();
 
     if (userTags.isEmpty) {
-      return allProjects;
+      return allProjects.map((p) => (p, 0)).toList();
     }
 
     final lowerCaseUserTags = userTags.map((t) => t.toLowerCase()).toSet();
@@ -53,6 +53,6 @@ class ProjectService {
 
     matches.sort((a, b) => b.$2.compareTo(a.$2));
 
-    return [...matches.map((e) => e.$1), ...others];
+    return [...matches, ...others.map((p) => (p, 0))];
   }
 }

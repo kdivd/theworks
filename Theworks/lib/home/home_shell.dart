@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:theworks/classes/notification_service.dart';
 import 'home_page.dart';
 import 'search_page.dart';
 import 'notifications_page.dart';
@@ -23,7 +26,8 @@ class _HomeShellState extends State<HomeShell> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_pages.isEmpty) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final selectedTags = args != null && args.containsKey('selectedTags')
           ? args['selectedTags'] as List<String>?
           : null;
@@ -35,6 +39,48 @@ class _HomeShellState extends State<HomeShell> {
         const ProfileTab(),
       ];
     }
+  }
+
+  Widget _buildNotificationIcon() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Icon(Icons.notifications);
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: NotificationService().getUserNotifications(user.uid),
+      builder: (context, snapshot) {
+        bool hasUnread = false;
+        if (snapshot.hasData) {
+          hasUnread = snapshot.data!.docs.any((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return data['read'] == false;
+          });
+        }
+
+        if (hasUnread) {
+          return Stack(
+            children: [
+              const Icon(Icons.notifications),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(1),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 8,
+                    minHeight: 8,
+                  ),
+                ),
+              )
+            ],
+          );
+        }
+        return const Icon(Icons.notifications);
+      },
+    );
   }
 
   @override
@@ -54,12 +100,13 @@ class _HomeShellState extends State<HomeShell> {
           selectedItemColor: _selectedItemColor,
           unselectedItemColor: _unselectedItemColor,
           backgroundColor: _backGroundColor,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          items: [
+            const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: 'Alerts'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+                icon: _buildNotificationIcon(), label: 'Alerts'),
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
       ),

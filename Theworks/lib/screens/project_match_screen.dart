@@ -12,7 +12,7 @@ class ProjectMatchScreen extends StatefulWidget {
 }
 
 class _ProjectMatchScreenState extends State<ProjectMatchScreen> {
-  late Future<List<Project>> _matchedProjects;
+  late Future<List<(Project, int)>> _matchedProjects;
   final ProjectService _projectService = ProjectService();
 
   @override
@@ -27,7 +27,7 @@ class _ProjectMatchScreenState extends State<ProjectMatchScreen> {
       appBar: AppBar(
         title: const Text('Matched Projects'),
       ),
-      body: FutureBuilder<List<Project>>(
+      body: FutureBuilder<List<(Project, int)>>(
         future: _matchedProjects,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -37,12 +37,15 @@ class _ProjectMatchScreenState extends State<ProjectMatchScreen> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No projects found.'));
           } else {
-            final projects = snapshot.data!;
+            final projectsWithScores = snapshot.data!;
             return ListView.builder(
-              itemCount: projects.length,
+              itemCount: projectsWithScores.length,
               itemBuilder: (context, index) {
-                final project = projects[index];
+                final item = projectsWithScores[index];
+                final project = item.$1;
+                final score = item.$2;
                 return Card(
+                  color: score > 0 ? Colors.green.shade50 : Colors.red.shade50,
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
                     title: Text(project.name),
