@@ -1,12 +1,11 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:theworks/classes/post.dart';
+import 'package:theworks/classes/post_service.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 import 'package:theworks/routes.dart';
-import 'package:theworks/theme/app_colors.dart';
 
 class HomeTab extends StatefulWidget {
   final List<String>? selectedTags;
@@ -18,76 +17,24 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  final PostService _postService = PostService();
   final ProjectService _projectService = ProjectService();
 
-  List<Project> _allProjects = [];
-  List<Project> _filteredProjects = [];
-  List<String> _availableTags = ['All'];
+  List<String>? _fetchedTags;
   bool _isLoading = true;
-  String _userRole = 'student';
-
-  String _searchCity = '';
-  String _filterLocationType = 'All';
-  String _filterTag = 'All';
-
-  bool get isQualified => _userRole == 'recruiter' || _userRole == 'admin';
 
   @override
   void initState() {
     super.initState();
-    _fetchUserRole();
-    _loadTags();
-    _loadProjects();
-  }
-
-  Future<void> _loadTags() async {
-    try {
-      final String response = await rootBundle.loadString('assets/tags.json');
-      final List<dynamic> data = json.decode(response);
-      if (mounted) {
-        setState(() {
-          _availableTags = ['All', ...data.cast<String>()];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading tags: $e");
+    if (widget.selectedTags != null) {
+      _fetchedTags = widget.selectedTags;
+      _isLoading = false;
+    } else {
+      _fetchUserData();
     }
   }
 
-  Future<void> _loadProjects() async {
-    setState(() => _isLoading = true);
-    try {
-      final projects =
-          await _projectService.getProjectsByTags(widget.selectedTags ?? []);
-      if (mounted) {
-        setState(() {
-          _allProjects = projects;
-          _runFilters();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading projects: $e");
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  void _runFilters() {
-    setState(() {
-      _filteredProjects = _allProjects.where((p) {
-        final cityMatch = _searchCity.isEmpty ||
-            p.city.toLowerCase().contains(_searchCity.toLowerCase());
-
-        final typeMatch = _filterLocationType == 'All' ||
-            p.locationType == _filterLocationType;
-        final tagMatch = _filterTag == 'All' || p.tags.contains(_filterTag);
-
-        return cityMatch && typeMatch && tagMatch;
-      }).toList();
-    });
-  }
-
-  Future<void> _fetchUserRole() async {
+  Future<void> _fetchUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -96,229 +43,207 @@ class _HomeTabState extends State<HomeTab> {
             .doc(user.uid)
             .get();
         if (doc.exists && mounted) {
+          final data = doc.data()!;
           setState(() {
-            _userRole = doc.data()?['role'] ?? 'student';
+            if (data.containsKey('tags')) {
+              _fetchedTags = List<String>.from(data['tags']);
+            }
+            _isLoading = false;
           });
         }
       } catch (e) {
-        debugPrint("Error fetching role: $e");
+        debugPrint("Error fetching user data: $e");
+        if (mounted) setState(() => _isLoading = false);
       }
+    } else {
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _showFilterModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        String tempLocation = _filterLocationType;
-        String tempTag = _filterTag;
-        final TextEditingController cityController =
-            TextEditingController(text: _searchCity);
-
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setModalState) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: 20,
-                right: 20,
-                top: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Filter Projects",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: cityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Filter by City',
-                    prefixIcon: Icon(Icons.location_city),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text("Filter by Skill / Tag",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: tempTag,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                  items: _availableTags.map((tag) {
-                    return DropdownMenuItem(
-                      value: tag,
-                      child: Text(tag),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) setModalState(() => tempTag = val);
-                  },
-                ),
-                const SizedBox(height: 20),
-                const Text("Location Type",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 10,
-                  children: ['All', 'On-site', 'Remote', 'Hybrid'].map((type) {
-                    final isSelected = tempLocation == type;
-                    return ChoiceChip(
-                      label: Text(type),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setModalState(() => tempLocation = type);
-                        }
-                      },
-                      selectedColor: AppColors.accentGold,
-                      labelStyle: TextStyle(
-                        color: isSelected ? AppColors.darkBlue : Colors.black,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _searchCity = '';
-                          _filterLocationType = 'All';
-                          _filterTag = 'All';
-                          _runFilters();
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Reset"),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.darkBlue,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _searchCity = cityController.text.trim();
-                          _filterLocationType = tempLocation;
-                          _filterTag = tempTag;
-                          _runFilters();
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Apply Filters"),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          );
-        });
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Matched Projects'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.tune,
-              color: (_searchCity.isNotEmpty ||
-                      _filterLocationType != 'All' ||
-                      _filterTag != 'All')
-                  ? AppColors.accentGold
-                  : null,
-            ),
-            onPressed: _showFilterModal,
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('The Works'),
+          automaticallyImplyLeading: false,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Projects'),
+              Tab(text: 'Feed'),
+            ],
           ),
-          if (isQualified)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () async {
-                await Navigator.pushNamed(context, AppRoutes.createProject);
-                _loadProjects();
-              },
-            ),
-        ],
+        ),
+        body: TabBarView(
+          children: [
+            _buildProjectsView(),
+            _buildFeedView(),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoutes.createPost);
+          },
+          label: const Text('Create Post'),
+          icon: const Icon(Icons.add),
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _filteredProjects.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.search_off,
-                          size: 60, color: Colors.grey),
-                      const SizedBox(height: 10),
-                      Text(
-                        _allProjects.isEmpty
-                            ? "No projects found matching your tags."
-                            : "No projects match your filters.",
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _filteredProjects.length,
-                  itemBuilder: (context, index) {
-                    final project = _filteredProjects[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text(project.name),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(project.description,
-                                maxLines: 1, overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on,
-                                    size: 14, color: Colors.grey),
-                                Text(
-                                  " ${project.city} • ${project.locationType}",
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.projectDetail,
-                            arguments: project,
-                          );
-                        },
-                      ),
-                    );
-                  },
+    );
+  }
+
+  Widget _buildProjectsView() {
+    return FutureBuilder<List<Project>>(
+      // If fetchedTags is null here, getProjectsByTags handles empty list gracefully
+      future: _projectService.getProjectsByTags(_fetchedTags ?? []),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.work_off, size: 60, color: Colors.grey),
+                const SizedBox(height: 10),
+                const Text(
+                  "No projects found.",
+                  style: TextStyle(color: Colors.grey),
                 ),
+                if (_fetchedTags == null || _fetchedTags!.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.tags);
+                      },
+                      child: const Text("Select Tags"),
+                    ),
+                  )
+              ],
+            ),
+          );
+        }
+
+        final projects = snapshot.data!;
+        return ListView.builder(
+          itemCount: projects.length,
+          itemBuilder: (context, index) {
+            final project = projects[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListTile(
+                title: Text(project.name),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.city,
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
+                          fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      project.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.projectDetail,
+                    arguments: project,
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFeedView() {
+    return StreamBuilder<List<Post>>(
+      stream: _postService.getPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.feed, size: 60, color: Colors.grey),
+                SizedBox(height: 10),
+                Text(
+                  "No posts yet. Be the first to post!",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final posts = snapshot.data!;
+        return ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            final post = posts[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListTile(
+                title: Text(post.title),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'By ${post.authorName}',
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
+                          fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      post.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.postDetail,
+                    arguments: post,
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

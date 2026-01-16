@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 import 'package:theworks/theme/app_colors.dart';
+import 'package:theworks/routes.dart';
 
 class CreateProjectScreen extends StatefulWidget {
   const CreateProjectScreen({super.key});
@@ -30,10 +31,24 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   final List<String> _durations = ['1 Month', '3 Months', '6 Months', '1 Year'];
   final List<String> _locationTypes = ['On-site', 'Remote', 'Hybrid'];
 
+  bool _isInit = true;
+
   @override
   void initState() {
     super.initState();
     _loadTags();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args != null && args['companyLocation'] != null) {
+        _cityController.text = args['companyLocation'];
+      }
+      _isInit = false;
+    }
   }
 
   @override
@@ -102,7 +117,15 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Project created successfully!")),
       );
-      Navigator.pop(context);
+
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      final fromOnboarding = args?['fromOnboarding'] == true;
+
+      if (fromOnboarding) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else {
+        Navigator.pop(context);
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),

@@ -88,7 +88,7 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
 
       _expCompanyController.clear();
       _expDescController.clear();
-      _expDuration = '6 Months';
+      _expDuration = '3 Months';
       _expSelectedTags = [];
       _isAddingExperience = false;
     });
@@ -430,8 +430,9 @@ class _AdditionalInfoScreenState extends State<AdditionalInfoScreen> {
                                       );
                                     }).toList(),
                                     onChanged: (val) {
-                                      if (val != null)
+                                      if (val != null) {
                                         setState(() => _expDuration = val);
+                                      }
                                     },
                                   ),
                                 ),

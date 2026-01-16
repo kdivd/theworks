@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:theworks/classes/project.dart';
 
@@ -18,7 +19,7 @@ class ProjectService {
         return Project.fromMap(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
     } catch (e) {
-      print("Error fetching projects: $e");
+      debugPrint("Error fetching projects: $e");
       return [];
     }
   }
@@ -31,7 +32,8 @@ class ProjectService {
     }
 
     final lowerCaseUserTags = userTags.map((t) => t.toLowerCase()).toSet();
-    final List<(Project, int)> scoredProjects = [];
+    final List<(Project, int)> matches = [];
+    final List<Project> others = [];
 
     for (final project in allProjects) {
       int score = 0;
@@ -43,12 +45,14 @@ class ProjectService {
       }
 
       if (score > 0) {
-        scoredProjects.add((project, score));
+        matches.add((project, score));
+      } else {
+        others.add(project);
       }
     }
 
-    scoredProjects.sort((a, b) => b.$2.compareTo(a.$2));
+    matches.sort((a, b) => b.$2.compareTo(a.$2));
 
-    return scoredProjects.map((record) => record.$1).toList();
+    return [...matches.map((e) => e.$1), ...others];
   }
 }

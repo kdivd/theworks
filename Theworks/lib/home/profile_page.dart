@@ -71,7 +71,7 @@ class _ProfileTabState extends State<ProfileTab> {
                         .doc(_user!.uid)
                         .update({'school': selectedSchool});
                   }
-                  if (mounted) Navigator.pop(context);
+                  if (context.mounted) Navigator.pop(context);
                 },
                 child: const Text("Save"),
               ),
@@ -107,7 +107,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     .doc(_user!.uid)
                     .update({'city': cityController.text.trim()});
               }
-              if (mounted) Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
             child: const Text("Save"),
           ),
