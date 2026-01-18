@@ -31,4 +31,12 @@ class PostService {
     }
     return null;
   }
+
+  Future<void> deletePost(String postId) {
+    return _postsCollection.doc(postId).delete();
+  }
+
+  Future<void> updatePost(String postId, Map<String, dynamic> data) {
+    return _postsCollection.doc(postId).update(data);
+  }
 }

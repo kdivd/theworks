@@ -67,6 +67,7 @@ class _CompanySetupScreenState extends State<CompanySetupScreen> {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'companyName': _nameController.text.trim(),
         'companyLocation': _locationController.text.trim(),
+        'city': _locationController.text.trim(), // Save city as well
         'companyDescription': _descController.text.trim(),
         'techStack': _selectedTags,
         // We ensure the role is recruiter, just in case

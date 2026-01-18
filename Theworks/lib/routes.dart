@@ -14,6 +14,8 @@ import 'package:theworks/screens/create_post_screen.dart';
 import 'package:theworks/screens/post_detail_screen.dart';
 import 'screens/company_setup_screen.dart';
 
+import 'package:theworks/screens/user_profile_screen.dart'; // Import this
+
 class AppRoutes {
   static const welcome = '/';
   static const login = '/login';
@@ -27,6 +29,7 @@ class AppRoutes {
   static const companySetup = '/company-setup';
   static const createPost = '/create-post';
   static const postDetail = '/post-detail';
+  static const userProfile = '/user-profile'; // Add this
 
   static Route<dynamic> onGenerateRoute(RouteSettings s) {
     switch (s.name) {
@@ -47,16 +50,25 @@ class AppRoutes {
         final project = s.arguments as Project;
         return _page(ProjectDetailScreen(project: project));
       case createProject:
-        return _page(const CreateProjectScreen());
+        final args = s.arguments;
+        Project? project;
+        if (args is Project) {
+          project = args;
+        }
+        return _page(CreateProjectScreen(project: project));
       case settings:
         return _page(const SettingsScreen());
       case companySetup:
         return _page(const CompanySetupScreen());
       case createPost:
-        return _page(const CreatePostScreen());
+        final post = s.arguments as Post?;
+        return _page(CreatePostScreen(post: post));
       case postDetail:
         final post = s.arguments as Post;
         return _page(PostDetailScreen(post: post));
+      case userProfile: // Add this case
+        final userData = s.arguments as Map<String, dynamic>;
+        return _page(UserProfileScreen(userData: userData));
       default:
         return _page(const WelcomeScreen());
     }

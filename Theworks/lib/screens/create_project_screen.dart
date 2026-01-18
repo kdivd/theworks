@@ -6,9 +6,12 @@ import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 import 'package:theworks/theme/app_colors.dart';
 import 'package:theworks/routes.dart';
+import 'package:theworks/classes/moderation_service.dart';
 
 class CreateProjectScreen extends StatefulWidget {
-  const CreateProjectScreen({super.key});
+  final Project? project;
+
+  const CreateProjectScreen({super.key, this.project});
 
   @override
   State<CreateProjectScreen> createState() => _CreateProjectScreenState();
@@ -37,15 +40,23 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   void initState() {
     super.initState();
     _loadTags();
+    if (widget.project != null) {
+      _titleController.text = widget.project!.name;
+      _descController.text = widget.project!.description;
+      _cityController.text = widget.project!.city;
+      _selectedTags.addAll(widget.project!.tags);
+      _selectedDuration = widget.project!.duration;
+      _selectedLocationType = widget.project!.locationType;
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_isInit) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map?;
-      if (args != null && args['companyLocation'] != null) {
-        _cityController.text = args['companyLocation'];
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['companyLocation'] != null) {
+         _cityController.text = args['companyLocation'];
       }
       _isInit = false;
     }
@@ -96,35 +107,64 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       return;
     }
 
+    if (ModerationService.containsProfanity(_titleController.text) || 
+        ModerationService.containsProfanity(_descController.text) ||
+        ModerationService.containsProfanity(_cityController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Project contains inappropriate language. Please revise.")),
+      );
+      return;
+    }
+
     setState(() => _isUploading = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
 
-      final newProject = Project(
-        name: _titleController.text.trim(),
-        description: _descController.text.trim(),
-        tags: _selectedTags,
-        createdBy: user?.uid,
-        duration: _selectedDuration,
-        locationType: _selectedLocationType,
-        city: _cityController.text.trim(),
-      );
+      if (widget.project != null) {
+        // Update existing project
+        await ProjectService().updateProject(widget.project!.id!, {
+          'name': _titleController.text.trim(),
+          'description': _descController.text.trim(),
+          'tags': _selectedTags,
+          'duration': _selectedDuration,
+          'locationType': _selectedLocationType,
+          'city': _cityController.text.trim(),
+        });
 
-      await ProjectService().createProject(newProject);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Project updated successfully!")),
+        );
+         Navigator.pop(context);
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Project created successfully!")),
-      );
-
-      final args = ModalRoute.of(context)?.settings.arguments as Map?;
-      final fromOnboarding = args?['fromOnboarding'] == true;
-
-      if (fromOnboarding) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
-        Navigator.pop(context);
+        // Create new project
+        final newProject = Project(
+          name: _titleController.text.trim(),
+          description: _descController.text.trim(),
+          tags: _selectedTags,
+          createdBy: user?.uid,
+          duration: _selectedDuration,
+          locationType: _selectedLocationType,
+          city: _cityController.text.trim(),
+        );
+
+        await ProjectService().createProject(newProject);
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Project created successfully!")),
+        );
+
+        final args = ModalRoute.of(context)?.settings.arguments;
+        final fromOnboarding = (args is Map) && args['fromOnboarding'] == true;
+
+        if (fromOnboarding) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        } else {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +180,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       appBar: AppBar(
-        title: const Text("Post New Project"),
+        title: Text(widget.project != null ? "Edit Project" : "Post New Project"),
         backgroundColor: AppColors.darkBlue,
         foregroundColor: Colors.white,
       ),
@@ -274,8 +314,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                   onPressed: _isUploading ? null : _submitProject,
                   child: _isUploading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Create Project",
-                          style: TextStyle(fontSize: 16)),
+                      : Text(widget.project != null ? "Update Project" : "Create Project",
+                          style: const TextStyle(fontSize: 16)),
                 ),
               )
             ],

@@ -5,6 +5,8 @@ import 'package:theworks/classes/post.dart';
 import 'package:theworks/classes/post_service.dart';
 import 'package:theworks/classes/notification_service.dart';
 import 'package:intl/intl.dart';
+import 'package:theworks/routes.dart';
+import 'package:theworks/classes/moderation_service.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
@@ -23,22 +25,38 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      if (ModerationService.containsProfanity(_commentController.text)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Comment contains inappropriate language. Please revise.")),
+          );
+        }
+        return;
+      }
+
       final user = auth.currentUser;
       if (user != null) {
-        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
         final userData = userDoc.data();
-        
+
         String authorName = 'Anonymous';
         if (userData != null) {
-          if (userData.containsKey('companyName') && userData['companyName'].toString().isNotEmpty) {
+          if (userData.containsKey('companyName') &&
+              userData['companyName'].toString().isNotEmpty) {
             authorName = userData['companyName'];
-          } else if (userData.containsKey('displayName') && userData['displayName'].toString().isNotEmpty) {
+          } else if (userData.containsKey('displayName') &&
+              userData['displayName'].toString().isNotEmpty) {
             authorName = userData['displayName'];
           }
         }
-        
-        if (authorName == 'Anonymous' && user.displayName != null && user.displayName!.isNotEmpty) {
-            authorName = user.displayName!;
+
+        if (authorName == 'Anonymous' &&
+            user.displayName != null &&
+            user.displayName!.isNotEmpty) {
+          authorName = user.displayName!;
         }
 
         final comment = {
@@ -65,11 +83,57 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> _deletePost() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Post'),
+        content: const Text('Are you sure you want to delete this post?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _postService.deletePost(widget.post.postId);
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.post.title),
+        actions: [
+          if (auth.currentUser?.uid == widget.post.authorId) ...[
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.createPost,
+                  arguments: widget.post,
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: _deletePost,
+            ),
+          ],
+        ],
       ),
       body: Column(
         children: [
@@ -81,23 +145,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 children: [
                   Text(
                     widget.post.title,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Text(
                         'By ${widget.post.authorName}',
-                        style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                        style: const TextStyle(
+                            fontStyle: FontStyle.italic, color: Colors.grey),
                       ),
                       const Spacer(),
                       Chip(label: Text(widget.post.language)),
                     ],
                   ),
                   const SizedBox(height: 8),
-                   Text(
-                    DateFormat('MMM d, yyyy HH:mm').format(widget.post.createdAt.toDate()),
-                     style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  Text(
+                    DateFormat('MMM d, yyyy HH:mm')
+                        .format(widget.post.createdAt.toDate()),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   const SizedBox(height: 16),
                   const Divider(),
@@ -113,21 +180,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance.collection('posts').doc(widget.post.postId).snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(widget.post.postId)
+                        .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      final postData = snapshot.data!.data() as Map<String, dynamic>;
-                      final comments = (postData['comments'] as List<dynamic>).cast<Map<String, dynamic>>();
+                      final postData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+                      final comments = (postData['comments'] as List<dynamic>)
+                          .cast<Map<String, dynamic>>();
 
                       if (comments.isEmpty) {
                         return const Text('No comments yet.');
                       }
 
                       // Sort comments by createdAt descending
-                      comments.sort((a, b) => (b['createdAt'] as Timestamp).compareTo(a['createdAt'] as Timestamp));
-
+                      comments.sort((a, b) => (b['createdAt'] as Timestamp)
+                          .compareTo(a['createdAt'] as Timestamp));
 
                       return ListView.builder(
                         shrinkWrap: true,
@@ -135,7 +207,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         itemCount: comments.length,
                         itemBuilder: (context, index) {
                           final comment = comments[index];
-                          final createdAt = (comment['createdAt'] as Timestamp).toDate();
+                          final createdAt =
+                              (comment['createdAt'] as Timestamp).toDate();
 
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -150,15 +223,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                       Text(
+                                      Text(
                                         'By ${comment['authorName']}',
-                                        style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.grey),
                                       ),
                                       Text(
-                                        DateFormat('MMM d, HH:mm').format(createdAt),
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        DateFormat('MMM d, HH:mm')
+                                            .format(createdAt),
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.grey),
                                       ),
                                     ],
                                   ),

@@ -6,6 +6,7 @@ import 'package:theworks/classes/post_service.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 import 'package:theworks/routes.dart';
+import 'package:theworks/theme/app_colors.dart'; // Ensure this is imported
 
 class HomeTab extends StatefulWidget {
   final List<String>? selectedTags;
@@ -16,22 +17,38 @@ class HomeTab extends StatefulWidget {
   State<HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> {
+class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
   final PostService _postService = PostService();
   final ProjectService _projectService = ProjectService();
+  late TabController _tabController;
 
   List<String>? _fetchedTags;
+  String? _userRole;
+  String? _userCity;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+
     if (widget.selectedTags != null) {
       _fetchedTags = widget.selectedTags;
-      _isLoading = false;
+      _fetchUserData();
     } else {
       _fetchUserData();
     }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchUserData() async {
@@ -47,6 +64,12 @@ class _HomeTabState extends State<HomeTab> {
           setState(() {
             if (data.containsKey('tags')) {
               _fetchedTags = List<String>.from(data['tags']);
+            }
+            if (data.containsKey('role')) {
+              _userRole = data['role'];
+            }
+            if (data.containsKey('city')) {
+              _userCity = data['city'];
             }
             _isLoading = false;
           });
@@ -68,40 +91,67 @@ class _HomeTabState extends State<HomeTab> {
       );
     }
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('The Works'),
-          automaticallyImplyLeading: false,
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Projects'),
-              Tab(text: 'Feed'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildProjectsView(),
-            _buildFeedView(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('The Works'),
+        automaticallyImplyLeading: false,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Projects'),
+            Tab(text: 'Feed'),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.createPost);
-          },
-          label: const Text('Create Post'),
-          icon: const Icon(Icons.add),
-        ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildProjectsView(),
+          _buildFeedView(),
+        ],
+      ),
+      floatingActionButton: _buildFab(),
     );
   }
 
+  Widget? _buildFab() {
+    final isRecruiter = _userRole == 'recruiter';
+    final isProjectTab = _tabController.index == 0;
+
+    if (isProjectTab) {
+      if (isRecruiter) {
+        return FloatingActionButton.extended(
+          backgroundColor: AppColors.accentGold,
+          onPressed: () {
+            Navigator.pushNamed(
+              context, 
+              AppRoutes.createProject,
+              arguments: {'companyLocation': _userCity},
+            );
+          },
+          label: const Text('Create Project',
+              style: TextStyle(color: AppColors.darkBlue)),
+          icon: const Icon(Icons.work, color: AppColors.darkBlue),
+        );
+      }
+      return null; // Students can't create projects
+    } else {
+      // Feed Tab
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.accentGold,
+        onPressed: () {
+          Navigator.pushNamed(context, AppRoutes.createPost);
+        },
+        label: const Text('Create Post',
+            style: TextStyle(color: AppColors.darkBlue)),
+        icon: const Icon(Icons.post_add, color: AppColors.darkBlue),
+      );
+    }
+  }
+
   Widget _buildProjectsView() {
-    return FutureBuilder<List<(Project, int)>>(
-      // If fetchedTags is null here, getProjectsByTags handles empty list gracefully
-      future: _projectService.getProjectsByTags(_fetchedTags ?? []),
+    return StreamBuilder<List<Project>>(
+      stream: _projectService.getProjectsStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -120,7 +170,8 @@ class _HomeTabState extends State<HomeTab> {
                   "No projects found.",
                   style: TextStyle(color: Colors.grey),
                 ),
-                if (_fetchedTags == null || _fetchedTags!.isEmpty)
+                if ((_fetchedTags == null || _fetchedTags!.isEmpty) &&
+                    _userRole != 'recruiter')
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0),
                     child: ElevatedButton(
@@ -135,48 +186,104 @@ class _HomeTabState extends State<HomeTab> {
           );
         }
 
-        final projectsWithScores = snapshot.data!;
-        return ListView.builder(
-          itemCount: projectsWithScores.length,
-          itemBuilder: (context, index) {
-            final item = projectsWithScores[index];
-            final project = item.$1;
-            final score = item.$2;
+        final allProjects = snapshot.data!;
+        // Sort/Score projects
+        var projectsWithScores = _projectService.sortProjectsByTags(allProjects, _fetchedTags ?? []);
 
-            return Card(
-              color: score > 0 ? Colors.green.shade50 : Colors.red.shade50,
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
-                title: Text(project.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      project.city,
-                      style: const TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                          fontSize: 12),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      project.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.projectDetail,
-                    arguments: project,
-                  );
-                },
+        // Filter for Recruiters: Only show their own projects
+        if (_userRole == 'recruiter') {
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+          projectsWithScores = projectsWithScores
+              .where((item) => item.$1.createdBy == currentUserId)
+              .toList();
+
+          if (projectsWithScores.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.work_history, size: 60, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text(
+                    "You haven't posted any projects yet.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
               ),
             );
-          },
+          }
+        }
+
+        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+        return StreamBuilder<Set<String>>(
+          stream: currentUserId != null 
+              ? _projectService.getAppliedProjectIdsStream(currentUserId)
+              : Stream.value({}),
+          builder: (context, appliedSnapshot) {
+            final appliedProjectIds = appliedSnapshot.data ?? {};
+
+            return ListView.builder(
+              itemCount: projectsWithScores.length,
+              itemBuilder: (context, index) {
+                final item = projectsWithScores[index];
+                final project = item.$1;
+                final score = item.$2;
+                final isApplied = appliedProjectIds.contains(project.id);
+
+                // Determine card color:
+                final cardColor = _userRole == 'recruiter' 
+                    ? Colors.white 
+                    : (score > 0 ? Colors.green.shade50 : Colors.red.shade50);
+
+                return Card(
+                  color: cardColor,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Row(
+                      children: [
+                        Expanded(child: Text(project.name)),
+                        if (isApplied)
+                          const Chip(
+                            label: Text('Applied', style: TextStyle(fontSize: 10, color: Colors.white)),
+                            backgroundColor: Colors.green,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          project.city,
+                          style: const TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                              fontSize: 12),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          project.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.projectDetail,
+                        arguments: project,
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          }
         );
       },
     );

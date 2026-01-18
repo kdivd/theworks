@@ -32,7 +32,15 @@ class _ProfileTabState extends State<ProfileTab> {
   // --- SCHOOL EDITING ---
   Future<void> _showEditSchoolDialog(String? currentSchool) async {
     String? selectedSchool =
-        _schools.contains(currentSchool) ? currentSchool : null;
+        _schools.contains(currentSchool) ? currentSchool : 'Other';
+    // If currentSchool is not in list but is not null/empty, it's a custom school (so we select 'Other')
+    // But we need to prepopulate the text field.
+    final TextEditingController customSchoolController = TextEditingController();
+    
+    if (currentSchool != null && !_schools.contains(currentSchool)) {
+      selectedSchool = 'Other';
+      customSchoolController.text = currentSchool;
+    }
 
     await showDialog(
       context: context,
@@ -54,9 +62,25 @@ class _ProfileTabState extends State<ProfileTab> {
                   items: _schools
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                       .toList(),
-                  onChanged: (val) =>
-                      setDialogState(() => selectedSchool = val),
+                  onChanged: (val) {
+                    setDialogState(() {
+                      selectedSchool = val;
+                      if (val != 'Other') {
+                        customSchoolController.clear();
+                      }
+                    });
+                  },
                 ),
+                if (selectedSchool == 'Other') ...[
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: customSchoolController,
+                    decoration: const InputDecoration(
+                      labelText: "Enter your school name",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ],
             ),
             actions: [
@@ -65,11 +89,20 @@ class _ProfileTabState extends State<ProfileTab> {
                   child: const Text("Cancel")),
               ElevatedButton(
                 onPressed: () async {
-                  if (selectedSchool != null && _user != null) {
+                  String? schoolToSave = selectedSchool;
+                  if (selectedSchool == 'Other') {
+                    if (customSchoolController.text.trim().isEmpty) {
+                      // Optional: show error
+                      return; 
+                    }
+                    schoolToSave = customSchoolController.text.trim();
+                  }
+
+                  if (schoolToSave != null && _user != null) {
                     await FirebaseFirestore.instance
                         .collection('users')
                         .doc(_user!.uid)
-                        .update({'school': selectedSchool});
+                        .update({'school': schoolToSave});
                   }
                   if (context.mounted) Navigator.pop(context);
                 },
@@ -171,6 +204,9 @@ class _ProfileTabState extends State<ProfileTab> {
           final String role = data?['role'] ?? "Student";
           final String bio = data?['bio'] ?? "";
           final String portfolio = data?['portfolioUrl'] ?? "";
+          final String companyName = data?['companyName'] ?? "No Company";
+
+          final bool isRecruiter = role == 'recruiter';
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -208,12 +244,15 @@ class _ProfileTabState extends State<ProfileTab> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- Info Cards (School & City) ---
+                  // --- Info Cards (School/Company & City) ---
                   Row(
                     children: [
                       Expanded(
-                          child: _buildInfoCard(Icons.school, "School", school,
-                              () => _showEditSchoolDialog(school))),
+                        child: isRecruiter
+                            ? _buildInfoCard(Icons.business, "Company", companyName, () {})
+                            : _buildInfoCard(Icons.school, "School", school,
+                                () => _showEditSchoolDialog(school)),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                           child: _buildInfoCard(Icons.location_on, "City", city,
@@ -260,113 +299,116 @@ class _ProfileTabState extends State<ProfileTab> {
 
                   const Divider(color: Colors.white24, height: 40),
 
-                  // --- Experience Section ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Experience",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle,
-                            color: AppColors.accentGold),
-                        onPressed: _showAddExperienceModal,
-                      ),
-                    ],
-                  ),
-                  if (experiences.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Text("No experience added yet.",
-                          style: TextStyle(
-                              color: Colors.white54,
-                              fontStyle: FontStyle.italic)),
-                    ),
-                  ...experiences.map((exp) {
-                    final e = exp as Map<String, dynamic>;
-                    return Card(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(e['company'] ?? 'Unknown',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16)),
-                                if (e['duration'] != null && e['duration'] != 'N/A')
-                                  Chip(
-                                    label: Text(e['duration'] ?? '',
-                                        style: const TextStyle(fontSize: 10)),
-                                    backgroundColor: AppColors.accentGold,
-                                    padding: EdgeInsets.zero,
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                              ],
-                            ),
-                            if (e['description'] != null) ...[
-                              const SizedBox(height: 8),
-                              Text(e['description'],
-                                  style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8))),
-                            ],
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 6,
-                              children: (e['tags'] as List<dynamic>? ?? [])
-                                  .map((t) => Text("#$t",
-                                      style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.7),
-                                          fontSize: 12)))
-                                  .toList(),
-                            )
-                          ],
+                  // --- Experience Section (Hidden for Recruiters) ---
+                  if (!isRecruiter) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Experience",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle,
+                              color: AppColors.accentGold),
+                          onPressed: _showAddExperienceModal,
                         ),
+                      ],
+                    ),
+                    if (experiences.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Text("No experience added yet.",
+                            style: TextStyle(
+                                color: Colors.white54,
+                                fontStyle: FontStyle.italic)),
                       ),
-                    );
-                  }),
+                    ...experiences.map((exp) {
+                      final e = exp as Map<String, dynamic>;
+                      return Card(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(e['company'] ?? 'Unknown',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16)),
+                                  if (e['duration'] != null && e['duration'] != 'N/A')
+                                    Chip(
+                                      label: Text(e['duration'] ?? '',
+                                          style: const TextStyle(fontSize: 10)),
+                                      backgroundColor: AppColors.accentGold,
+                                      padding: EdgeInsets.zero,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                ],
+                              ),
+                              if (e['description'] != null) ...[
+                                const SizedBox(height: 8),
+                                Text(e['description'],
+                                    style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.8))),
+                              ],
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                children: (e['tags'] as List<dynamic>? ?? [])
+                                    .map((t) => Text("#$t",
+                                        style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                            fontSize: 12)))
+                                    .toList(),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                    const Divider(color: Colors.white24, height: 40),
+                  ],
 
-                  const Divider(color: Colors.white24, height: 40),
-
-                  // --- Skills Section ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Skills",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.white70),
-                        onPressed: () =>
-                            Navigator.pushNamed(context, AppRoutes.tags),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: skills
-                        .map((skill) => Chip(
-                              label: Text(skill),
-                              backgroundColor: Colors.white.withAlpha(230),
-                              labelStyle: const TextStyle(
-                                  color: AppColors.darkBlue,
-                                  fontWeight: FontWeight.w600),
-                            ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 40),
+                  // --- Skills Section (Hidden for Recruiters) ---
+                  if (!isRecruiter) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Skills",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.white70),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, AppRoutes.tags),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: skills
+                          .map((skill) => Chip(
+                                label: Text(skill),
+                                backgroundColor: Colors.white.withAlpha(230),
+                                labelStyle: const TextStyle(
+                                    color: AppColors.darkBlue,
+                                    fontWeight: FontWeight.w600),
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ],
               ),
             ),
