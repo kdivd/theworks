@@ -6,7 +6,7 @@ import 'package:theworks/classes/post_service.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/project_service.dart';
 import 'package:theworks/routes.dart';
-import 'package:theworks/theme/app_colors.dart'; // Ensure this is imported
+import 'package:theworks/theme/app_colors.dart';
 
 class HomeTab extends StatefulWidget {
   final List<String>? selectedTags;
@@ -124,7 +124,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
           backgroundColor: AppColors.accentGold,
           onPressed: () {
             Navigator.pushNamed(
-              context, 
+              context,
               AppRoutes.createProject,
               arguments: {'companyLocation': _userCity},
             );
@@ -188,7 +188,8 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
 
         final allProjects = snapshot.data!;
         // Sort/Score projects
-        var projectsWithScores = _projectService.sortProjectsByTags(allProjects, _fetchedTags ?? []);
+        var projectsWithScores =
+            _projectService.sortProjectsByTags(allProjects, _fetchedTags ?? []);
 
         // Filter for Recruiters: Only show their own projects
         if (_userRole == 'recruiter') {
@@ -217,74 +218,80 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
         final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
         return StreamBuilder<Set<String>>(
-          stream: currentUserId != null 
-              ? _projectService.getAppliedProjectIdsStream(currentUserId)
-              : Stream.value({}),
-          builder: (context, appliedSnapshot) {
-            final appliedProjectIds = appliedSnapshot.data ?? {};
+            stream: currentUserId != null
+                ? _projectService.getAppliedProjectIdsStream(currentUserId)
+                : Stream.value({}),
+            builder: (context, appliedSnapshot) {
+              final appliedProjectIds = appliedSnapshot.data ?? {};
 
-            return ListView.builder(
-              itemCount: projectsWithScores.length,
-              itemBuilder: (context, index) {
-                final item = projectsWithScores[index];
-                final project = item.$1;
-                final score = item.$2;
-                final isApplied = appliedProjectIds.contains(project.id);
+              return ListView.builder(
+                itemCount: projectsWithScores.length,
+                itemBuilder: (context, index) {
+                  final item = projectsWithScores[index];
+                  final project = item.$1;
+                  final score = item.$2;
+                  final isApplied = appliedProjectIds.contains(project.id);
 
-                // Determine card color:
-                final cardColor = _userRole == 'recruiter' 
-                    ? Colors.white 
-                    : (score > 0 ? Colors.green.shade50 : Colors.red.shade50);
+                  // Determine card color:
+                  final cardColor = _userRole == 'recruiter'
+                      ? Colors.white
+                      : (score > 0 ? Colors.green.shade50 : Colors.red.shade50);
 
-                return Card(
-                  color: cardColor,
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title: Row(
-                      children: [
-                        Expanded(child: Text(project.name)),
-                        if (isApplied)
-                          const Chip(
-                            label: Text('Applied', style: TextStyle(fontSize: 10, color: Colors.white)),
-                            backgroundColor: Colors.green,
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  return Card(
+                    color: cardColor,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      title: Row(
+                        children: [
+                          Expanded(child: Text(project.name)),
+                          if (isApplied)
+                            const Chip(
+                              label: Text('Applied',
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white)),
+                              backgroundColor: Colors.green,
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                        ],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            (project.companyName != null &&
+                                    project.companyName!.isNotEmpty)
+                                ? '${project.companyName} • ${project.city}'
+                                : project.city,
+                            style: const TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey,
+                                fontSize: 12),
                           ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            project.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.projectDetail,
+                          arguments: project,
+                        );
+                      },
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          project.city,
-                          style: const TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                              fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          project.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.projectDetail,
-                        arguments: project,
-                      );
-                    },
-                  ),
-                );
-              },
-            );
-          }
-        );
+                  );
+                },
+              );
+            });
       },
     );
   }

@@ -4,6 +4,7 @@ class Project {
   final String description;
   final List<String> tags;
   final String? createdBy;
+  final String? companyName;
   final String duration;
   final String locationType;
   final String city;
@@ -14,6 +15,7 @@ class Project {
     required this.description,
     required this.tags,
     this.createdBy,
+    this.companyName,
     required this.duration,
     required this.locationType,
     required this.city,
@@ -26,9 +28,11 @@ class Project {
       'tags': tags,
       'createdAt': DateTime.now().millisecondsSinceEpoch,
       'createdBy': createdBy,
+      'companyName': companyName,
       'duration': duration,
       'locationType': locationType,
       'city': city,
+      'searchTags': tags.map((t) => t.toLowerCase()).toList(),
     };
   }
 
@@ -39,6 +43,7 @@ class Project {
       description: map['description'] ?? '',
       tags: List<String>.from(map['tags'] ?? []),
       createdBy: map['createdBy'],
+      companyName: map['companyName'],
       duration: map['duration'] ?? '',
       locationType: map['locationType'] ?? 'On-site',
       city: map['city'] ?? 'Unknown',

@@ -54,9 +54,13 @@ class AuthService {
       {required String currentPassword,
       required String newPassword,
       required String email}) async {
+    final user = currentUser;
+    if (user == null) {
+      throw Exception('No user signed in');
+    }
     AuthCredential credential =
         EmailAuthProvider.credential(email: email, password: currentPassword);
-    await currentUser?.reauthenticateWithCredential( credential);
-    await currentUser?.updatePassword(newPassword);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
   }
 }

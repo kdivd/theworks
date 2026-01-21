@@ -21,7 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _displayName = TextEditingController();
 
   String _selectedRole = 'student'; // 'student' or 'recruiter'
-  
+
   bool _hidePw1 = true;
   bool _hidePw2 = true;
   bool _busy = false;
@@ -81,7 +81,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         height: 100,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.darkBlue : Colors.white.withValues(alpha: 0.1),
+          color: isSelected
+              ? AppColors.darkBlue
+              : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.white : Colors.transparent,
@@ -175,7 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(color: Colors.white),
-                      decoration: _filled('Academy E-Mail'),
+                      decoration: _filled('E-Mail'),
                       validator: (v) {
                         final text = v?.trim() ?? '';
                         if (text.isEmpty) {
@@ -198,12 +200,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: _filled(
                         'Password',
                         suffix: IconButton(
-                          onPressed: () =>
-                              setState(() => _hidePw1 = !_hidePw1),
+                          onPressed: () => setState(() => _hidePw1 = !_hidePw1),
                           icon: Icon(
-                            _hidePw1
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _hidePw1 ? Icons.visibility : Icons.visibility_off,
                             color: Colors.white70,
                           ),
                         ),
@@ -227,12 +226,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: _filled(
                         'Confirm password',
                         suffix: IconButton(
-                          onPressed: () =>
-                              setState(() => _hidePw2 = !_hidePw2),
+                          onPressed: () => setState(() => _hidePw2 = !_hidePw2),
                           icon: Icon(
-                            _hidePw2
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _hidePw2 ? Icons.visibility : Icons.visibility_off,
                             color: Colors.white70,
                           ),
                         ),
@@ -303,7 +299,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Account created! Role: ${_selectedRole == 'recruiter' ? 'Company' : 'Student'}'),
+          content: Text(
+              'Account created! Role: ${_selectedRole == 'recruiter' ? 'Company' : 'Student'}'),
           backgroundColor: Colors.green,
         ),
       );

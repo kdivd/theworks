@@ -34,46 +34,50 @@ class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings s) {
     switch (s.name) {
       case welcome:
-        return _page(const WelcomeScreen());
+        return _page(const WelcomeScreen(), settings: s);
       case login:
-        return _page(const LoginScreen());
+        return _page(const LoginScreen(), settings: s);
       case register:
-        return _page(const RegisterScreen());
+        return _page(const RegisterScreen(), settings: s);
       case tags:
-        return _page(const TagsScreen());
+        return _page(const TagsScreen(), settings: s);
       case additionalInfo:
         final args = s.arguments as List<String>?;
-        return _page(AdditionalInfoScreen(selectedTags: args));
+        return _page(AdditionalInfoScreen(selectedTags: args), settings: s);
       case home:
-        return _page(const HomeShell(), fullscreen: true);
+        return _page(const HomeShell(), fullscreen: true, settings: s);
       case projectDetail:
         final project = s.arguments as Project;
-        return _page(ProjectDetailScreen(project: project));
+        return _page(ProjectDetailScreen(project: project), settings: s);
       case createProject:
         final args = s.arguments;
         Project? project;
         if (args is Project) {
           project = args;
         }
-        return _page(CreateProjectScreen(project: project));
+        return _page(CreateProjectScreen(project: project), settings: s);
       case settings:
-        return _page(const SettingsScreen());
+        return _page(const SettingsScreen(), settings: s);
       case companySetup:
-        return _page(const CompanySetupScreen());
+        return _page(const CompanySetupScreen(), settings: s);
       case createPost:
         final post = s.arguments as Post?;
-        return _page(CreatePostScreen(post: post));
+        return _page(CreatePostScreen(post: post), settings: s);
       case postDetail:
         final post = s.arguments as Post;
-        return _page(PostDetailScreen(post: post));
+        return _page(PostDetailScreen(post: post), settings: s);
       case userProfile: // Add this case
         final userData = s.arguments as Map<String, dynamic>;
-        return _page(UserProfileScreen(userData: userData));
+        return _page(UserProfileScreen(userData: userData), settings: s);
       default:
-        return _page(const WelcomeScreen());
+        return _page(const WelcomeScreen(), settings: s);
     }
   }
 
-  static PageRoute _page(Widget child, {bool fullscreen = false}) =>
-      MaterialPageRoute(builder: (_) => child, fullscreenDialog: fullscreen);
+  static PageRoute _page(Widget child,
+          {bool fullscreen = false, RouteSettings? settings}) =>
+      MaterialPageRoute(
+          builder: (_) => child,
+          fullscreenDialog: fullscreen,
+          settings: settings);
 }

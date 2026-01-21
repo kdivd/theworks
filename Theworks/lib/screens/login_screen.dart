@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _email,
                               keyboardType: TextInputType.emailAddress,
                               style: const TextStyle(color: Colors.white),
-                              decoration: _filled('Academy E-Mail'),
+                              decoration: _filled('E-Mail'),
                               validator: (v) {
                                 final text = v?.trim() ?? '';
                                 if (text.isEmpty) return 'Enter your email';

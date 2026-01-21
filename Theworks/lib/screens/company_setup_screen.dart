@@ -210,7 +210,10 @@ class _CompanySetupScreenState extends State<CompanySetupScreen> {
                           selected: state.selected(_availableTags[i]),
                           onSelected: state.onSelected(_availableTags[i]),
                           selectedColor: AppColors.accentGold,
-                          backgroundColor: Colors.white24,
+                          backgroundColor: const Color(0xFF3E4663),
+                          side: state.selected(_availableTags[i])
+                              ? BorderSide.none
+                              : const BorderSide(color: Colors.white24),
                           labelStyle: TextStyle(
                             color: state.selected(_availableTags[i])
                                 ? AppColors.darkBlue

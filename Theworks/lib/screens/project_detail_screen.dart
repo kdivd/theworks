@@ -175,10 +175,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  if (widget.project.companyName != null &&
+                      widget.project.companyName!.isNotEmpty) ...[
+                    _buildInfoItem(Icons.business, "Company",
+                        widget.project.companyName!),
+                    Container(
+                        width: 1, height: 40, color: Colors.grey.shade300),
+                  ],
                   _buildInfoItem(Icons.location_on, "Location",
                       "${widget.project.city}\n(${widget.project.locationType})"),
                   Container(width: 1, height: 40, color: Colors.grey.shade300),
-                  _buildInfoItem(Icons.timer, "Duration", widget.project.duration),
+                  _buildInfoItem(
+                      Icons.timer, "Duration", widget.project.duration),
                 ],
               ),
             ),

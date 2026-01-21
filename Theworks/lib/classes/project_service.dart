@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:theworks/classes/project.dart';
 import 'package:theworks/classes/application.dart';
@@ -92,7 +93,7 @@ class ProjectService {
       return projects.map((p) => (p, 0)).toList();
     }
 
-    final expandedUserTags = _expandTags(userTags);
+    final expandedUserTags = expandTags(userTags);
     final List<(Project, int)> matches = [];
     final List<Project> others = [];
 
@@ -117,7 +118,8 @@ class ProjectService {
     return [...matches, ...others.map((p) => (p, 0))];
   }
 
-  Set<String> _expandTags(List<String> tags) {
+  @visibleForTesting
+  static Set<String> expandTags(List<String> tags) {
     Set<String> expandedTags = tags.map((t) => t.toLowerCase()).toSet();
     bool changed = true;
 
@@ -140,34 +142,64 @@ class ProjectService {
   }
 
   Future<List<(Project, int)>> getProjectsByTags(List<String> userTags) async {
-    List<Project> allProjects = await getProjects();
-
     if (userTags.isEmpty) {
-      return allProjects.map((p) => (p, 0)).toList();
+      return [];
     }
 
-    final expandedUserTags = _expandTags(userTags);
-    final List<(Project, int)> matches = [];
-    final List<Project> others = [];
+    final expandedUserTags = expandTags(userTags);
+    if (expandedUserTags.isEmpty) {
+      return [];
+    }
 
-    for (final project in allProjects) {
-      int score = 0;
+    // Chunk tags into groups of 10 for array-contains-any limit
+    List<List<String>> chunks = [];
+    List<String> currentChunk = [];
+    for (var tag in expandedUserTags) {
+      currentChunk.add(tag);
+      if (currentChunk.length == 10) {
+        chunks.add(currentChunk);
+        currentChunk = [];
+      }
+    }
+    if (currentChunk.isNotEmpty) {
+      chunks.add(currentChunk);
+    }
 
-      for (final projectTag in project.tags) {
-        if (expandedUserTags.contains(projectTag.toLowerCase())) {
-          score++;
+    try {
+      final List<QuerySnapshot> snapshots = await Future.wait(
+        chunks.map((chunk) => _projectsCollection
+            .where('searchTags', arrayContainsAny: chunk)
+            .get())
+      );
+
+      final Map<String, Project> uniqueProjects = {};
+      for (var snapshot in snapshots) {
+        for (var doc in snapshot.docs) {
+          if (!uniqueProjects.containsKey(doc.id)) {
+            uniqueProjects[doc.id] = Project.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+          }
         }
       }
 
-      if (score > 0) {
-        matches.add((project, score));
-      } else {
-        others.add(project);
+      final List<(Project, int)> matches = [];
+      for (final project in uniqueProjects.values) {
+        int score = 0;
+        for (final projectTag in project.tags) {
+          if (expandedUserTags.contains(projectTag.toLowerCase())) {
+            score++;
+          }
+        }
+        if (score > 0) {
+          matches.add((project, score));
+        }
       }
+
+      matches.sort((a, b) => b.$2.compareTo(a.$2));
+      return matches;
+
+    } catch (e) {
+      debugPrint("Error fetching projects by tags: $e");
+      return [];
     }
-
-    matches.sort((a, b) => b.$2.compareTo(a.$2));
-
-    return [...matches, ...others.map((p) => (p, 0))];
   }
 }

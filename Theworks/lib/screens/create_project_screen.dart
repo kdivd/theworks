@@ -2,22 +2,25 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:theworks/classes/project.dart';
-import 'package:theworks/classes/project_service.dart';
+// import 'package:theworks/classes/project_service.dart'; // No longer needed
 import 'package:theworks/theme/app_colors.dart';
 import 'package:theworks/routes.dart';
 import 'package:theworks/classes/moderation_service.dart';
+import 'package:theworks/providers/service_providers.dart';
 
-class CreateProjectScreen extends StatefulWidget {
+class CreateProjectScreen extends ConsumerStatefulWidget {
   final Project? project;
 
   const CreateProjectScreen({super.key, this.project});
 
   @override
-  State<CreateProjectScreen> createState() => _CreateProjectScreenState();
+  ConsumerState<CreateProjectScreen> createState() => _CreateProjectScreenState();
 }
 
-class _CreateProjectScreenState extends State<CreateProjectScreen> {
+class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -120,16 +123,28 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
+      String? companyName;
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        companyName = userDoc.data()?['companyName'];
+      }
+
+      final projectService = ref.read(projectServiceProvider);
 
       if (widget.project != null) {
         // Update existing project
-        await ProjectService().updateProject(widget.project!.id!, {
+        await projectService.updateProject(widget.project!.id!, {
           'name': _titleController.text.trim(),
           'description': _descController.text.trim(),
           'tags': _selectedTags,
+          'searchTags': _selectedTags.map((t) => t.toLowerCase()).toList(),
           'duration': _selectedDuration,
           'locationType': _selectedLocationType,
           'city': _cityController.text.trim(),
+          'companyName': companyName,
         });
 
         if (!mounted) return;
@@ -145,12 +160,13 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           description: _descController.text.trim(),
           tags: _selectedTags,
           createdBy: user?.uid,
+          companyName: companyName,
           duration: _selectedDuration,
           locationType: _selectedLocationType,
           city: _cityController.text.trim(),
         );
 
-        await ProjectService().createProject(newProject);
+        await projectService.createProject(newProject);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
